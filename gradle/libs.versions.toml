@@ -8,7 +8,8 @@ espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.8.6"
 activityCompose = "1.9.2"
 composeBom = "2024.09.03"
-mediapipe = "0.10.16"
+mediapipe = "0.10.24"
+mediapipeVision = "0.10.21"
 cameraX = "1.3.4"
 
 [libraries]
@@ -30,7 +31,7 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 
 tasks-genai = { group = "com.google.mediapipe", name = "tasks-genai", version.ref = "mediapipe" }
-tasks-vision = { group = "com.google.mediapipe", name = "tasks-vision", version.ref = "mediapipe" }
+tasks-vision = { group = "com.google.mediapipe", name = "tasks-vision", version.ref = "mediapipeVision" }
 
 androidx-camera-core = { group = "androidx.camera", name = "camera-core", version.ref = "cameraX" }
 androidx-camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "cameraX" }

@@ -9,7 +9,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.random.Random
 
 data class TerriblePoemUiState(
     val loaded: Boolean = false,
@@ -30,18 +29,8 @@ class TerriblePoemViewModel(application: Application): AndroidViewModel(applicat
         viewModelScope.launch(Dispatchers.IO) {
 
             val options = LlmInferenceOptions.builder()
-                .setModelPath("/data/local/tmp/gemma2-2b-it-cpu-int8.task")
+                .setModelPath("/data/local/tmp/llm/gemma3_1b.task")
                 .setMaxTokens(500)
-                .setTemperature(1.0f)
-                .setRandomSeed(Random.nextInt())
-                .setResultListener { partialResult, done ->
-                    uiState.update {
-                        it.copy(
-                            poemComplete = done,
-                            poemVerse =  (it.poemVerse ?: "") + partialResult
-                        )
-                    }
-                }
                 .build()
 
             try {
@@ -67,7 +56,14 @@ class TerriblePoemViewModel(application: Application): AndroidViewModel(applicat
 
         // Tell the MediaPipe library to start generating text
         viewModelScope.launch(Dispatchers.IO) {
-            llmInference?.generateResponseAsync(prompt)
+            llmInference?.generateResponseAsync(prompt) { partialResult, done ->
+                uiState.update {
+                    it.copy(
+                        poemComplete = done,
+                        poemVerse = (it.poemVerse ?: "") + partialResult
+                    )
+                }
+            }
         }
     }
 
