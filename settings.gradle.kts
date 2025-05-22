@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "GemmaLLMDemo"
+rootProject.name = "MediaPipeDemoAndroid"
 include(":app")
  
