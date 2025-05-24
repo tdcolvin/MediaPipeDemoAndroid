@@ -29,7 +29,10 @@ fun RoastMePhotoScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(uiState.image) {
-        uiState.image?.let { setPhoto(it) }
+        uiState.image?.let {
+            setPhoto(it)
+            viewModel.reset()
+        }
     }
 
     RoastMePhotoScreenContent(

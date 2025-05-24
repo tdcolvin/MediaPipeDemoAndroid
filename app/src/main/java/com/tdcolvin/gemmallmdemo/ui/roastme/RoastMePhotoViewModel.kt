@@ -17,6 +17,10 @@ data class RoastMePhotoUiState(
 class RoastMePhotoViewModel: ViewModel() {
     val uiState = MutableStateFlow(RoastMePhotoUiState())
 
+    fun reset() {
+        uiState.update { RoastMePhotoUiState() }
+    }
+
     fun setCapturedImage(image: ImageProxy) {
         viewModelScope.launch(Dispatchers.Default) {
             val maxDim = 1000
