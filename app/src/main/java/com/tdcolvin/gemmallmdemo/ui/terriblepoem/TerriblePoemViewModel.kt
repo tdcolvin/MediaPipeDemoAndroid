@@ -38,9 +38,8 @@ class TerriblePoemViewModel(application: Application): AndroidViewModel(applicat
         viewModelScope.launch(Dispatchers.IO) {
 
             val options = LlmInferenceOptions.builder()
-                .setModelPath("/data/local/tmp/llm/gemma3_4b.task")
+                .setModelPath("/data/local/tmp/llm/gemma3_1b.task")
                 .setMaxTokens(1000)
-                .setMaxNumImages(1)
                 .build()
 
             try {
@@ -90,7 +89,6 @@ class TerriblePoemViewModel(application: Application): AndroidViewModel(applicat
             val inferenceSessionOptions = LlmInferenceSessionOptions.builder()
                 .setTopK(10)
                 .setTemperature(0.8f)
-                .setGraphOptions(GraphOptions.builder().setEnableVisionModality(true).build())
                 .build()
 
             val llmInferenceSession = LlmInferenceSession.createFromOptions(llmInference, inferenceSessionOptions)
