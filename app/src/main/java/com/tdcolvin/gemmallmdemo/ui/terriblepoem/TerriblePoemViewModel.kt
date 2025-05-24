@@ -29,7 +29,7 @@ class TerriblePoemViewModel(application: Application): AndroidViewModel(applicat
         viewModelScope.launch(Dispatchers.IO) {
 
             val options = LlmInferenceOptions.builder()
-                .setModelPath("/data/local/tmp/llm/gemma3_1b.task")
+                .setModelPath("/data/local/tmp/llm/gemma3_4b.task")
                 .setMaxTokens(500)
                 .build()
 
