@@ -32,7 +32,6 @@ class TerriblePoemViewModel(application: Application): AndroidViewModel(applicat
     val uiState = MutableStateFlow(TerriblePoemUiState())
 
     private var llmInference: LlmInference? = null
-    private var llmInferenceSession: LlmInferenceSession? = null
 
     init {
         // Load the LlmInference object
@@ -44,15 +43,8 @@ class TerriblePoemViewModel(application: Application): AndroidViewModel(applicat
                 .setMaxNumImages(1)
                 .build()
 
-            val inferenceSessionOptions = LlmInferenceSessionOptions.builder()
-                .setTopK(10)
-                .setTemperature(0.8f)
-                .setGraphOptions(GraphOptions.builder().setEnableVisionModality(true).build())
-                .build()
-
             try {
                 llmInference = LlmInference.createFromOptions(application, options)
-                llmInferenceSession = LlmInferenceSession.createFromOptions(llmInference, inferenceSessionOptions)
 
                 uiState.update { it.copy(loaded = true, loadingError = null) }
             }
@@ -95,6 +87,14 @@ class TerriblePoemViewModel(application: Application): AndroidViewModel(applicat
 
         // Tell the MediaPipe library to start generating text
         viewModelScope.launch(Dispatchers.IO) {
+            val inferenceSessionOptions = LlmInferenceSessionOptions.builder()
+                .setTopK(10)
+                .setTemperature(0.8f)
+                .setGraphOptions(GraphOptions.builder().setEnableVisionModality(true).build())
+                .build()
+
+            val llmInferenceSession = LlmInferenceSession.createFromOptions(llmInference, inferenceSessionOptions)
+
             llmInferenceSession?.addQueryChunk(promptText)
             promptImage?.let { llmInferenceSession?.addImage(BitmapImageBuilder(it).build()) }
             llmInferenceSession?.generateResponseAsync { partialResult, done ->
