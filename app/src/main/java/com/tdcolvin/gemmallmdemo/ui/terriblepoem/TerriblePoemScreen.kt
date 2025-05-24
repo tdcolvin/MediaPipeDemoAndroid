@@ -1,9 +1,12 @@
 package com.tdcolvin.gemmallmdemo.ui.terriblepoem
 
+import android.graphics.Bitmap
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
@@ -16,11 +19,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -29,6 +34,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tdcolvin.gemmallmdemo.R
 import com.tdcolvin.gemmallmdemo.ui.reactiongesture.ReactionGestureScreen
+import com.tdcolvin.gemmallmdemo.ui.roastme.RoastMePhotoScreen
 import com.tdcolvin.gemmallmdemo.ui.takephoto.TakePhotoScreen
 
 @Composable
@@ -47,11 +53,13 @@ fun TerriblePoemScreen(
             TerriblePoemContent(
                 initialPoemSubject = initialPoemSubject,
                 poemTitle = uiState.poemTitle,
+                poemRoastImage = uiState.roastImage,
                 poemVerse = uiState.poemVerse,
                 poemComplete = uiState.poemComplete,
                 reactions = uiState.reactions,
                 loadingError = uiState.loadingError,
-                generateTerriblePoem = viewModel::generateTerriblePoem,
+                generateTerriblePoem = viewModel::generateTerriblePoemFromSubject,
+                generateRoastPoem = viewModel::generateRoast,
                 addReaction = viewModel::addReaction
             )
         }
@@ -62,15 +70,18 @@ fun TerriblePoemScreen(
 fun TerriblePoemContent(
     initialPoemSubject: String? = null,
     poemTitle: String?,
+    poemRoastImage: Bitmap?,
     poemVerse: String?,
     poemComplete: Boolean,
     reactions: String,
     loadingError: Throwable?,
     generateTerriblePoem: (String) -> Unit,
+    generateRoastPoem: (Bitmap) -> Unit,
     addReaction: (String) -> Unit,
 ) {
     var poemSubject by remember { mutableStateOf(initialPoemSubject ?: "") }
 
+    var showRoastMeDialog by remember { mutableStateOf(false) }
     var showTakePhotoDialog by remember { mutableStateOf(false) }
     var showReactionGestureDialog by remember { mutableStateOf(false) }
 
@@ -100,6 +111,13 @@ fun TerriblePoemContent(
             Text("Generate Terrible Poetry")
         }
 
+        Button(
+            onClick = { showRoastMeDialog = true },
+            enabled = poemComplete && loadingError == null
+        ) {
+            Text("Write About Me")
+        }
+
         if (loadingError != null) {
             Text("Error loading model: ${loadingError.message ?: "[Unknown]"}")
         }
@@ -107,6 +125,7 @@ fun TerriblePoemContent(
         Poem(
             modifier = Modifier.padding(top = 20.dp),
             title = if (poemTitle.isNullOrBlank()) "" else """"$poemTitle"""",
+            image = poemRoastImage,
             verses = poemVerse ?: "",
             complete = poemComplete
         )
@@ -116,6 +135,16 @@ fun TerriblePoemContent(
         Button(onClick = { showReactionGestureDialog = true }) {
             Text("React")
         }
+    }
+
+    if (showRoastMeDialog) {
+        RoastMePhotoDialog(
+            onDismiss = { showRoastMeDialog = false },
+            onSetRoastImage = { image ->
+                showRoastMeDialog = false
+                generateRoastPoem(image)
+            }
+        )
     }
 
     if (showTakePhotoDialog) {
@@ -138,9 +167,33 @@ fun TerriblePoemContent(
 }
 
 @Composable
+fun RoastMePhotoDialog(
+    onDismiss: () -> Unit,
+    onSetRoastImage: (Bitmap) -> Unit
+) {
+    MyDialog(
+        onDismiss = onDismiss
+    ) {
+        RoastMePhotoScreen(modifier = Modifier.fillMaxSize(), setPhoto = onSetRoastImage)
+    }
+}
+
+@Composable
 fun TakePhotoDialog(
     onDismiss: () -> Unit,
     onSetSubject: (String) -> Unit
+) {
+    MyDialog(
+        onDismiss = onDismiss
+    ) {
+       TakePhotoScreen(modifier = Modifier.fillMaxSize(), setPhotoSubject = onSetSubject)
+    }
+}
+
+@Composable
+fun MyDialog(
+    onDismiss: () -> Unit,
+    content: @Composable () -> Unit
 ) {
     Dialog(
         onDismissRequest = { onDismiss() }, properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -149,7 +202,7 @@ fun TakePhotoDialog(
             modifier = Modifier
                 .fillMaxSize(),
         ) {
-            TakePhotoScreen(modifier = Modifier.fillMaxSize(), setPhotoSubject = onSetSubject)
+            content()
         }
     }
 }
@@ -181,6 +234,7 @@ fun ReactionGestureDialog(
 fun Poem(
     modifier: Modifier = Modifier,
     title: String,
+    image: Bitmap?,
     verses: String,
     complete: Boolean
 ) {
@@ -194,6 +248,15 @@ fun Poem(
                 )
             }
         }
+
+        if (image != null) {
+            Image(
+                modifier = Modifier.height(300.dp),
+                bitmap = image.asImageBitmap(),
+                contentDescription = "Poem Image",
+            )
+        }
+
         Text(verses)
     }
 }
