@@ -95,9 +95,9 @@ class TerriblePoemViewModel(application: Application): AndroidViewModel(applicat
 
             val llmInferenceSession = LlmInferenceSession.createFromOptions(llmInference, inferenceSessionOptions)
 
-            llmInferenceSession?.addQueryChunk(promptText)
-            promptImage?.let { llmInferenceSession?.addImage(BitmapImageBuilder(it).build()) }
-            llmInferenceSession?.generateResponseAsync { partialResult, done ->
+            llmInferenceSession.addQueryChunk(promptText)
+            promptImage?.let { llmInferenceSession.addImage(BitmapImageBuilder(it).build()) }
+            llmInferenceSession.generateResponseAsync { partialResult, done ->
                 uiState.update {
                     it.copy(
                         poemComplete = done,
