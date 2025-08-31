@@ -58,7 +58,7 @@ class PaintMePhotoViewModel(application: Application): AndroidViewModel(applicat
                 val faceStylizer = FaceStylizer.createFromOptions(getApplication(), faceStylizerOptions)
 
                 val stylizeResult = faceStylizer.stylize(BitmapImageBuilder(bmp).build())
-                val stylizedImage = stylizeResult.stylizedImage().getOrNull() ?: throw Exception("No result")
+                val stylizedImage = stylizeResult.stylizedImage().getOrNull() ?: return@withContext
 
                 val byteBuffer = ByteBufferExtractor.extract(stylizedImage)
                 val width = stylizedImage.width
