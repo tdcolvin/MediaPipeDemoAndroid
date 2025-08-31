@@ -33,6 +33,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tdcolvin.gemmallmdemo.R
+import com.tdcolvin.gemmallmdemo.ui.paintme.PaintMePhotoScreen
 import com.tdcolvin.gemmallmdemo.ui.reactiongesture.ReactionGestureScreen
 import com.tdcolvin.gemmallmdemo.ui.roastme.RoastMePhotoScreen
 import com.tdcolvin.gemmallmdemo.ui.takephoto.TakePhotoScreen
@@ -82,6 +83,7 @@ fun TerriblePoemContent(
     var poemSubject by remember { mutableStateOf(initialPoemSubject ?: "") }
 
     var showRoastMeDialog by remember { mutableStateOf(false) }
+    var showPaintMeDialog by remember { mutableStateOf(false) }
     var showTakePhotoDialog by remember { mutableStateOf(false) }
     var showReactionGestureDialog by remember { mutableStateOf(false) }
 
@@ -118,6 +120,13 @@ fun TerriblePoemContent(
             Text("Write About Me")
         }
 
+        Button(
+            onClick = { showPaintMeDialog = true },
+            enabled = poemComplete && loadingError == null
+        ) {
+            Text("Paint Me")
+        }
+
         if (loadingError != null) {
             Text("Error loading model: ${loadingError.message ?: "[Unknown]"}")
         }
@@ -144,6 +153,12 @@ fun TerriblePoemContent(
                 showRoastMeDialog = false
                 generateRoastPoem(image)
             }
+        )
+    }
+
+    if (showPaintMeDialog) {
+        PaintMePhotoDialog(
+            onDismiss = { showPaintMeDialog = false }
         )
     }
 
@@ -175,6 +190,20 @@ fun RoastMePhotoDialog(
         onDismiss = onDismiss
     ) {
         RoastMePhotoScreen(modifier = Modifier.fillMaxSize(), setPhoto = onSetRoastImage)
+    }
+}
+
+@Composable
+fun PaintMePhotoDialog(
+    onDismiss: () -> Unit
+) {
+    MyDialog(
+        onDismiss = onDismiss
+    ) {
+        PaintMePhotoScreen(
+            modifier = Modifier.fillMaxSize(),
+            onClose = onDismiss
+        )
     }
 }
 
