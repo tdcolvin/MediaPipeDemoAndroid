@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -35,6 +37,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tdcolvin.gemmallmdemo.R
 import com.tdcolvin.gemmallmdemo.ui.paintme.PaintMePhotoScreen
 import com.tdcolvin.gemmallmdemo.ui.reactiongesture.ReactionGestureScreen
+import com.tdcolvin.gemmallmdemo.ui.readtext.ReadTextPhotoScreen
 import com.tdcolvin.gemmallmdemo.ui.roastme.RoastMePhotoScreen
 import com.tdcolvin.gemmallmdemo.ui.takephoto.TakePhotoScreen
 
@@ -61,6 +64,7 @@ fun TerriblePoemScreen(
                 loadingError = uiState.loadingError,
                 generateTerriblePoem = viewModel::generateTerriblePoemFromSubject,
                 generateRoastPoem = viewModel::generateRoast,
+                readTextFromImage = viewModel::readTextFromImage,
                 addReaction = viewModel::addReaction
             )
         }
@@ -78,11 +82,13 @@ fun TerriblePoemContent(
     loadingError: Throwable?,
     generateTerriblePoem: (String) -> Unit,
     generateRoastPoem: (Bitmap) -> Unit,
+    readTextFromImage: (Bitmap) -> Unit,
     addReaction: (String) -> Unit,
 ) {
     var poemSubject by remember { mutableStateOf(initialPoemSubject ?: "") }
 
     var showRoastMeDialog by remember { mutableStateOf(false) }
+    var showReadTextDialog by remember { mutableStateOf(false) }
     var showPaintMeDialog by remember { mutableStateOf(false) }
     var showTakePhotoDialog by remember { mutableStateOf(false) }
     var showReactionGestureDialog by remember { mutableStateOf(false) }
@@ -94,7 +100,9 @@ fun TerriblePoemContent(
         }
     }
 
-    Column {
+    Column(
+        modifier = Modifier.verticalScroll(rememberScrollState())
+    ) {
         Text("Write a terrible poem about:")
         Row {
             OutlinedTextField(
@@ -118,6 +126,13 @@ fun TerriblePoemContent(
             enabled = poemComplete && loadingError == null
         ) {
             Text("Write About Me")
+        }
+
+        Button(
+            onClick = { showReadTextDialog = true },
+            enabled = poemComplete && loadingError == null
+        ) {
+            Text("Read Text")
         }
 
         Button(
@@ -156,6 +171,16 @@ fun TerriblePoemContent(
         )
     }
 
+    if (showReadTextDialog) {
+        ReadTextPhotoDialog(
+            onDismiss = { showReadTextDialog = false },
+            onSetReadTextImage = { image ->
+                showReadTextDialog = false
+                readTextFromImage(image)
+            }
+        )
+    }
+
     if (showPaintMeDialog) {
         PaintMePhotoDialog(
             onDismiss = { showPaintMeDialog = false }
@@ -190,6 +215,18 @@ fun RoastMePhotoDialog(
         onDismiss = onDismiss
     ) {
         RoastMePhotoScreen(modifier = Modifier.fillMaxSize(), setPhoto = onSetRoastImage)
+    }
+}
+
+@Composable
+fun ReadTextPhotoDialog(
+    onDismiss: () -> Unit,
+    onSetReadTextImage: (Bitmap) -> Unit
+) {
+    MyDialog(
+        onDismiss = onDismiss
+    ) {
+        ReadTextPhotoScreen(modifier = Modifier.fillMaxSize(), setPhoto = onSetReadTextImage)
     }
 }
 

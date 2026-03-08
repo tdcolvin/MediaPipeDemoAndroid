@@ -76,6 +76,12 @@ class TerriblePoemViewModel(application: Application): AndroidViewModel(applicat
                 "Respond only with the 4 lines of the poem. Do not include any other text.", roastImage)
     }
 
+    fun readTextFromImage(image: Bitmap) {
+        uiState.update { it.copy(roastImage = image, poemTitle = null) }
+
+        generatePoemFromPrompt("Read all the text from this image. Respond only with the text you have found, or with the words 'no text found' if there is none.", image)
+    }
+
     private fun generatePoemFromPrompt(promptText: String, promptImage: Bitmap?) {
         if (!uiState.value.poemComplete) {
             return
