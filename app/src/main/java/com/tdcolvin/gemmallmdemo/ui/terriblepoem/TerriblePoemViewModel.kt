@@ -71,9 +71,11 @@ class TerriblePoemViewModel(application: Application): AndroidViewModel(applicat
     fun generateRoast(roastImage: Bitmap) {
         uiState.update { it.copy(roastImage = roastImage, poemTitle = null) }
 
-        generatePoemFromPrompt("Roast me! Be ruthless, savage and above all very funny.\n" +
-                "Give your answer as a 4 line poem.\n" +
-                "Respond only with the 4 lines of the poem. Do not include any other text.", roastImage)
+        generatePoemFromPrompt("Roast my outfit with! Be ruthless, savage and above all very funny.\n" +
+                "Pick out bits of my outfit that don't go, or patterns that are old fashioned or ugly.\n" +
+                "What unflattering thing does it make me look like? What do my clothes say about me?\n" +
+                "Don't say 'Oh honey', and keep your response to within about 50 words.\n" +
+                "It's all in the name of fun! Respond only with your roast. Do not include any other text.", roastImage)
     }
 
     fun readTextFromImage(image: Bitmap) {
