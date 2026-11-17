@@ -39,7 +39,7 @@ fun CameraPreview(
     DisposableEffect(Unit) {
         onDispose {
             cameraProvider?.unbindAll()
-            cameraProvider?.shutdown()
+            cameraProvider?.shutdownAsync()
         }
     }
 
