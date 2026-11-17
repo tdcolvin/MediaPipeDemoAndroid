@@ -8,9 +8,8 @@ espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.8.6"
 activityCompose = "1.9.2"
 mediapipe = "0.10.24"
-mediapipeVision = "0.10.21"
-cameraX = "1.3.4"
 composeBom = "2026.06.01"
+mediapipeVision = "0.10.26.1"
 cameraX = "1.6.2"
 
 [libraries]
