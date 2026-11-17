@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import androidx.core.graphics.scale
+import kotlinx.coroutines.CancellationException
 
 data class TerriblePoemUiState(
     val loaded: Boolean = false,
@@ -145,18 +146,23 @@ class TerriblePoemViewModel(application: Application): AndroidViewModel(applicat
                             it.copy(
                                 poemComplete = false,
                                 poemVerse = (it.poemVerse ?: "")
-                                        + msg.contents.contents.firstOrNull()?.toString()
+                                        + msg.toString()
                             )
                         }
                     }
-                uiState.update {
-                    it.copy(poemComplete = true)
-                }
 
                 conversation.close()
             }
+            catch (e: CancellationException) {
+                throw e
+            }
             catch (e: Exception) {
                 Log.e("litert", "Error setting up conversation", e)
+            }
+            finally {
+                uiState.update {
+                    it.copy(poemComplete = true)
+                }
             }
         }
     }
