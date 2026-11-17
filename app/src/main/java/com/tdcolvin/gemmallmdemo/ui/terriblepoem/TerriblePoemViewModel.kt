@@ -18,7 +18,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import androidx.core.graphics.scale
-import kotlinx.coroutines.flow.onCompletion
 
 data class TerriblePoemUiState(
     val loaded: Boolean = false,
