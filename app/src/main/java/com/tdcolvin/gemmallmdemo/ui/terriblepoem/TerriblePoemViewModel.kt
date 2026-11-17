@@ -141,11 +141,6 @@ class TerriblePoemViewModel(application: Application): AndroidViewModel(applicat
                     .catch { e ->
                         Log.e("litert", "Error generating text", e)
                     }
-                    .onCompletion {
-                        uiState.update {
-                            it.copy(poemComplete = true)
-                        }
-                    }
                     .collect { msg ->
                         uiState.update {
                             it.copy(
@@ -155,6 +150,11 @@ class TerriblePoemViewModel(application: Application): AndroidViewModel(applicat
                             )
                         }
                     }
+                uiState.update {
+                    it.copy(poemComplete = true)
+                }
+
+                conversation.close()
             }
             catch (e: Exception) {
                 Log.e("litert", "Error setting up conversation", e)
