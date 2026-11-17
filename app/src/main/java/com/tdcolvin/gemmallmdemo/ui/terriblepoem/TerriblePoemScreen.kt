@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -262,11 +263,16 @@ fun MyDialog(
     content: @Composable () -> Unit
 ) {
     Dialog(
-        onDismissRequest = { onDismiss() }, properties = DialogProperties(usePlatformDefaultWidth = false)
+        onDismissRequest = { onDismiss() },
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false,
+            decorFitsSystemWindows = false
+        )
     ) {
         Surface(
             modifier = Modifier
-                .fillMaxSize(),
+                .fillMaxSize()
+                .safeDrawingPadding(),
         ) {
             content()
         }
@@ -278,21 +284,14 @@ fun ReactionGestureDialog(
     onDismiss: () -> Unit,
     onAddReaction: (String) -> Unit
 ) {
-    Dialog(
-        onDismissRequest = { onDismiss() }, properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
-        Surface(
-            modifier = Modifier
-                .fillMaxSize(),
-        ) {
-            ReactionGestureScreen(
-                modifier = Modifier.fillMaxSize(),
-                setGesture = { gesture ->
-                    gesture?.let { onAddReaction(it) }
-                    onDismiss()
-                }
-            )
-        }
+    MyDialog(onDismiss = onDismiss) {
+        ReactionGestureScreen(
+            modifier = Modifier.fillMaxSize(),
+            setGesture = { gesture ->
+                gesture?.let { onAddReaction(it) }
+                onDismiss()
+            }
+        )
     }
 }
 
