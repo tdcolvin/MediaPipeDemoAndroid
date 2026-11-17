@@ -65,7 +65,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
 
-    implementation(libs.tasks.genai)
+    implementation(libs.litert.lm.android)
+
     implementation(libs.tasks.vision)
 
     implementation(libs.androidx.camera.core)

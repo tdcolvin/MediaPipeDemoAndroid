@@ -9,12 +9,12 @@ Example of using MediaPipe for:
 Everything works on-device.
 
 ## Requirements
-This uses Gemma 3n, the 4B parameter version. You probably need a phone with 8GB RAM.
+This uses Gemma 4, the E4B parameter version. You probably need a phone with 8GB RAM.
 
 ## Setup
 To make this work:
-1. Download Gemma 3n here: [gemma-3n-E4B-it-int4.task](https://huggingface.co/google/gemma-3n-E4B-it-litert-preview/blob/main/gemma-3n-E4B-it-int4.task)
-2. Copy it to your device using ADB: `adb push gemma-3n-E4B-it-int4.task /data/local/tmp/llm/gemma3_4b.task`
+1. Download Gemma 4 here: [gemma-4-E4B-it-litert-lm](https://huggingface.co/litert-community/gemma-4-E4B-it-litert-lm/blob/main/gemma-4-E4B-it-gpu.litertlm)
+2. Copy it to your device using ADB: `adb push gemma-4-E4B-it-gpu.litertlm /data/local/tmp/llm/gemma-4-E4B-it-gpu.litertlm`
 
 That location is specified in the `init` of TerriblePoemViewModel.
 

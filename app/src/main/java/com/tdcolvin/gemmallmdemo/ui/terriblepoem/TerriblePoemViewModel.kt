@@ -2,18 +2,23 @@ package com.tdcolvin.gemmallmdemo.ui.terriblepoem
 
 import android.app.Application
 import android.graphics.Bitmap
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.mediapipe.framework.image.BitmapImageBuilder
-import com.google.mediapipe.tasks.genai.llminference.GraphOptions
-import com.google.mediapipe.tasks.genai.llminference.LlmInference
-import com.google.mediapipe.tasks.genai.llminference.LlmInference.LlmInferenceOptions
-import com.google.mediapipe.tasks.genai.llminference.LlmInferenceSession
-import com.google.mediapipe.tasks.genai.llminference.LlmInferenceSession.LlmInferenceSessionOptions
+import com.google.ai.edge.litertlm.Backend
+import com.google.ai.edge.litertlm.Content
+import com.google.ai.edge.litertlm.Contents
+import com.google.ai.edge.litertlm.ConversationConfig
+import com.google.ai.edge.litertlm.Engine
+import com.google.ai.edge.litertlm.EngineConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.io.ByteArrayOutputStream
+import androidx.core.graphics.scale
+import kotlinx.coroutines.flow.onCompletion
 
 data class TerriblePoemUiState(
     val loaded: Boolean = false,
@@ -31,25 +36,44 @@ data class TerriblePoemUiState(
 class TerriblePoemViewModel(application: Application): AndroidViewModel(application) {
     val uiState = MutableStateFlow(TerriblePoemUiState())
 
-    private var llmInference: LlmInference? = null
+    private var engine: Engine? = null
 
     init {
-        // Load the LlmInference object
         viewModelScope.launch(Dispatchers.IO) {
-
-            val options = LlmInferenceOptions.builder()
-                .setModelPath("/data/local/tmp/llm/gemma3_4b.task")
-                .setMaxTokens(1000)
-                .setMaxNumImages(1)
-                .build()
-
+            val modelPath = "/data/local/tmp/llm/gemma-4-E4B-it-gpu.litertlm"
+            val cacheDir = getApplication<Application>().cacheDir.path
             try {
-                llmInference = LlmInference.createFromOptions(application, options)
-
+                val gpuEngine = Engine(
+                    EngineConfig(
+                        modelPath = modelPath,
+                        backend = Backend.GPU(),
+                        visionBackend = Backend.GPU(),
+                        cacheDir = cacheDir
+                    )
+                )
+                gpuEngine.initialize()
+                engine = gpuEngine
                 uiState.update { it.copy(loaded = true, loadingError = null) }
             }
-            catch (th: Throwable) {
-                uiState.update { it.copy(loaded = true, loadingError = th) }
+            catch (gpuError: Throwable) {
+                Log.w("litert", "GPU initialization failed, falling back to CPU", gpuError)
+                try {
+                    val cpuEngine = Engine(
+                        EngineConfig(
+                            modelPath = modelPath,
+                            backend = Backend.CPU(),
+                            visionBackend = Backend.CPU(),
+                            cacheDir = cacheDir
+                        )
+                    )
+                    cpuEngine.initialize()
+                    engine = cpuEngine
+                    uiState.update { it.copy(loaded = true, loadingError = null) }
+                }
+                catch (cpuError: Throwable) {
+                    Log.e("litert", "Error loading model", cpuError)
+                    uiState.update { it.copy(loaded = true, loadingError = cpuError) }
+                }
             }
         }
     }
@@ -89,29 +113,51 @@ class TerriblePoemViewModel(application: Application): AndroidViewModel(applicat
             return
         }
 
+        val activeEngine = engine ?: return
+
         uiState.update {
             it.copy(poemComplete = false, poemVerse = "", reactions = "")
         }
 
-        // Tell the MediaPipe library to start generating text
         viewModelScope.launch(Dispatchers.IO) {
-            val inferenceSessionOptions = LlmInferenceSessionOptions.builder()
-                .setTopK(10)
-                .setTemperature(0.8f)
-                .setGraphOptions(GraphOptions.builder().setEnableVisionModality(true).build())
-                .build()
-
-            val llmInferenceSession = LlmInferenceSession.createFromOptions(llmInference, inferenceSessionOptions)
-
-            llmInferenceSession.addQueryChunk(promptText)
-            promptImage?.let { llmInferenceSession.addImage(BitmapImageBuilder(it).build()) }
-            llmInferenceSession.generateResponseAsync { partialResult, done ->
-                uiState.update {
-                    it.copy(
-                        poemComplete = done,
-                        poemVerse = (it.poemVerse ?: "") + partialResult
-                    )
+            val promptImageJpg =
+                promptImage?.run {
+                    val scaled = scale(768, 768)
+                    val stream = ByteArrayOutputStream()
+                    scaled.compress(Bitmap.CompressFormat.JPEG, 85, stream)
+                    stream.toByteArray()
                 }
+
+            try {
+                val conversationConfig = ConversationConfig(maxOutputToken = 1000)
+
+                val conversation = activeEngine.createConversation(conversationConfig)
+                conversation.sendMessageAsync(Contents.of(
+                    listOfNotNull(
+                        Content.Text(promptText),
+                        promptImageJpg?.let { Content.ImageBytes(it) }
+                    )
+                ))
+                    .catch { e ->
+                        Log.e("litert", "Error generating text", e)
+                    }
+                    .onCompletion {
+                        uiState.update {
+                            it.copy(poemComplete = true)
+                        }
+                    }
+                    .collect { msg ->
+                        uiState.update {
+                            it.copy(
+                                poemComplete = false,
+                                poemVerse = (it.poemVerse ?: "")
+                                        + msg.contents.contents.firstOrNull()?.toString()
+                            )
+                        }
+                    }
+            }
+            catch (e: Exception) {
+                Log.e("litert", "Error setting up conversation", e)
             }
         }
     }
