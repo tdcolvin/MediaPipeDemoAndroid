@@ -85,8 +85,9 @@ class TerriblePoemViewModel(application: Application): AndroidViewModel(applicat
         val prompt = "Write a single verse, terrible poem about the following subject: " +
                 "${poemSubject}. It should be exactly 4 lines long and it should at least attempt to " +
                 "rhyme. It should be intentionally terrible, with bonus points for some forced or " +
-                "awkward rhymes, clunky meter, melodrama, overly flowery and pretentious language, " +
-                "silly imagery, or factual inaccuracy.\n" +
+                "awkward rhymes, clunky meter, melodrama, " +
+                "silly imagery, or factual inaccuracy. Use straightforward English that can be understood " +
+                "by someone whose first language is not English.\n" +
                 "Respond only with the 4 lines of the poem. Do not include any other text."
 
         generatePoemFromPrompt(prompt, null)
@@ -105,7 +106,7 @@ class TerriblePoemViewModel(application: Application): AndroidViewModel(applicat
     fun readTextFromImage(image: Bitmap) {
         uiState.update { it.copy(roastImage = image, poemTitle = null) }
 
-        generatePoemFromPrompt("Read all the text from this image. Respond only with the text you have found, or with the words 'no text found' if there is none.", image)
+        generatePoemFromPrompt("Read all the text from this image. Also translate it to English if it is not already in English. Respond only with the text you have found, the English translation of it if it's not in English already, or with the words 'no text found' if there is no readable text in the image.", image)
     }
 
     private fun generatePoemFromPrompt(promptText: String, promptImage: Bitmap?) {
